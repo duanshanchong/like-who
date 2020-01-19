@@ -5,25 +5,33 @@
     您像哪位历史人物
   </h1>
   </header>
-  <div class="image">
+  <div class="image" v-if="!showResult">
     <cube-upload
-    ref="upload"
-    v-model="files"
-    :action="action"
-    @files-added="addedHandler"
-    @file-error="errHandler">
-    <div class="clear-fix">
-      <cube-upload-file v-for="(file, i) in files" :file="file" :key="i" class="upload-file-image"></cube-upload-file>
-      <cube-upload-btn :multiple="false">
-        <div>
-          <i>＋</i>
-          <p>请点击上传头像</p>
-        </div>
-      </cube-upload-btn>
-    </div>
-  </cube-upload>
+      ref="upload"
+      v-model="files"
+      :action="action"
+      :auto="false"
+      @max="1"
+      @multiple="false"
+      @files-added="addedHandler"
+      @file-error="errHandler">
+      <div class="clear-fix">
+        <cube-upload-file v-for="(file, i) in files" :file="file" :key="i" class="upload-file-image"></cube-upload-file>
+        <cube-upload-btn :multiple="false">
+          <div>
+            <i>＋</i>
+            <p>请点击上传头像</p>
+          </div>
+        </cube-upload-btn>
+      </div>
+    </cube-upload>
   </div>
-  <cube-button @click="showDialog">查看结果</cube-button>
+  <div class="image" v-if="showResult">
+    <img :src="`data:image/jpg;base64,${result}`" />
+  </div>
+  <cube-button @click="startUpload" v-if="!showResult && files.length > 0 ">查看结果</cube-button>
+  <cube-button @click="back" v-if="showResult">返回</cube-button>
+
 
   <!-- <cube-upload
   ref="upload"
@@ -39,17 +47,43 @@
   export default {
     data() {
       return {
-      action: '//jsonplaceholder.typicode.com/photos/',
-        files: []
+        action: {
+          target: '/api/imagepp/v1/mergeface',
+          fileName: 'merge_file',
+          data: {
+            api_key: '_-RvjID81657p0fVYtAlAqh_t9iNqR6v',
+            api_secret: 'kgmnHuI-I9brGQ-2bmiwoS55YfKcvc3_',
+            template_url: 'https://stc.zjol.com.cn/g1/M0005BCCggSDVceDxCAQ-d5AAIpiH4LHH8949.png?width=473&height=327',
+          },
+          checkSuccess: (res) => {
+              const { result } = res;
+              if (result) {
+                this.result = result;
+                this.showResult = true;
+                return true;
+              }else{
+                return false;
+              }
+          }
+        },
+        files: [],
+        result: '',
+        showResult: false
       }
     },
     methods: {
+      back() {
+        this.showResult = false;
+      },
       showDialog() {
         this.$createDialog({
           type: 'alert',
           title: 'Alert',
           content: 'dialog content'
         }).show()
+      },
+      startUpload(){
+        this.$refs.upload.start();
       },
       addedHandler() {
         const file = this.files[0]
@@ -59,7 +93,7 @@
         // const msg = file.response.message
         this.$createToast({
           type: 'warn',
-          txt: 'Upload fail',
+          txt: '上传失败',
           time: 1000
         }).show()
       }
