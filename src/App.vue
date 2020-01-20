@@ -2,7 +2,7 @@
 <div>
   <header class="cube-bar">
   <h1>
-    您像哪位历史人物
+    您和哪位历史人物比较像?
   </h1>
   </header>
   <div class="image" v-if="!showResult">
@@ -73,6 +73,7 @@
     },
     methods: {
       back() {
+        this.files = [];
         this.showResult = false;
       },
       showDialog() {
